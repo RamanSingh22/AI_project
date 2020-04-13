@@ -1,0 +1,146 @@
+from tkinter import Toplevel, Button, Tk, Menu
+from tkinter import *
+from tkinter import messagebox
+import csv
+import numpy as np
+import pandas as pd
+from collections import Counter
+from  matplotlib import pyplot as plt
+top = Tk()
+
+top.geometry('1000000x10000000')
+def display():
+{
+plt.style.use("fivethirtyeight")
+
+
+data=pd.read_csv('tvshow.csv')
+print(data )
+sno=list(data['sno.'])
+showname=list(data['show name'])
+rating=list(data['rating'])
+votes=list(data['votes'])
+
+
+print(sno,showname,rating,votes,sep='\n')
+
+plt.barh(showname[0:30],rating[0:30],label='show popularity',)
+plt.legend(loc='best',)
+plt.ylabel('showname')
+plt.xlabel('rating')
+plt.axis(xmax=10)
+plt.subplots_adjust(left=0.27,right=0.96,bottom=0.08,top=1)
+
+plt.show()
+plt.pie(rating[0:20],labels=showname[0:20],autopct='%1.1f%%',rotatelabels=False)
+plt.subplots_adjust(left=0.03,right=0.96,bottom=0,top=1)
+
+plt.show()
+    
+    
+import requests
+import pandas as pd
+from bs4 import BeautifulSoup
+import pickle
+
+
+url = "http://www.imdb.com/chart/toptv/"
+r = requests.get(url)
+html = r.text
+html[0:200]
+
+# Use Beautiful soup to extract the imdb numbers from the webpage
+soup = BeautifulSoup(html, "lxml")
+
+#soup = BeautifulSoup(r.content, features=“html”)
+
+# Scrape the IMDb numbers for the 250 top rated shows
+
+show_list = []
+for tbody in soup.findAll('tbody', class_='lister-list'):
+    for title in tbody.findAll('td', class_='titleColumn'):
+        show_list.append(str(title.findAll('a')).split("/")[2])
+
+print(show_list)
+
+
+
+
+
+DO_NOT_RUN = True     # Do not run when notebook is loaded to avoid unnecessary calls to the API
+
+if not DO_NOT_RUN:
+    shows = pd.DataFrame()
+    for show_id in show_list:
+            try:
+                print (show_id)
+                # Get the tv show info from the api
+                url = "http://api.tvmaze.com/lookup/shows?imdb=" + show_id
+                r = requests.get(url)
+
+                # convert the return data to a dictionary
+                json_data = r.json()
+
+                # load a temp datafram with the dictionary, then append to the composite dataframe
+                temp_df = pd.DataFrame.from_dict(json_data, orient='index', dtype=None)
+                ttemp_df = temp_df.T     # Was not able to load json in column orientation, so must transpose
+                shows = shows.append(ttemp_df, ignore_index=True)
+            except: 
+                print (show_id)# " could not be retrieved from api"
+
+    shows.head()
+}
+
+msg = Message(top, text="WELCOME TO",width=5000,font=('arial',22))
+msg.config(bg='green')
+msg.pack()
+menubar = Menu(top)
+file = Menu(menubar, tearoff=0)
+file.add_command(label="New")
+file.add_command(label="Open")
+file.add_command(label="Save")
+file.add_command(label="Save as...")
+file.add_command(label="Close")
+
+file.add_separator()
+
+file.add_command(label="Exit", command=top.quit)
+
+menubar.add_cascade(label="File", font=('arial',15),menu=file)
+edit = Menu(menubar, tearoff=0)
+edit.add_command(label="Undo")
+
+edit.add_separator()
+
+edit.add_command(label="Cut")
+edit.add_command(label="Copy")
+edit.add_command(label="Paste")
+edit.add_command(label="Delete")
+edit.add_command(label="Select All")
+
+menubar.add_cascade(label="Edit", menu=edit)
+help = Menu(menubar, tearoff=0)
+help.add_command(label="About")
+menubar.add_cascade(label="Help", menu=help)
+
+
+
+
+
+f1=LabelFrame(top,text="TV SHOW POPULARITY ANALYSIS",font=('arial','25','bold italic'),bd=5,borderwidth=10,relief=RAISED)
+f1.pack(side=LEFT,fill=BOTH,expand=1)
+
+
+user=Label(f1,text="USERNAME",font='25',width='10',height='2').grid(row=0,column=1)
+password=Label(f1,text="PASSWORD",font='25',width='10',height='2').grid(row=1,column=1)
+uservalue=StringVar()
+passwordvalue=StringVar()
+
+
+ue=Entry(f1,textvariable=uservalue,width='20',font=('arial',15)).grid(row=0,column=2)
+pe=Entry(f1,textvariable=passwordvalue,width='20',font=('arial',15),show="*").grid(row=1,column=2)
+
+b1=Button(f1,text='submit',command=display,relief=RAISED,font=('arial',15)).grid(row=2,column=2)
+
+top.config(menu=menubar)
+top.mainloop()
